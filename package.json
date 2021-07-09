@@ -1,0 +1,17 @@
+{
+  "name": "innovate-trix",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "electron": "^13.1.6",
+    "mongoose": "^5.13.2"
+  }
+}

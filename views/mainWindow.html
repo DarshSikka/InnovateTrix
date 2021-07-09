@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app"> {{name}}
+        <form @submit="submission">
+            <label>Username: </label><input type="text" name="username" />
+            <label>Email: </label><input type="email" name="email">
+            <label>Password: </label><input type="password" name="password" />
+            <label>Confirm: </label><input type="password" name="confirm" />
+            <input type="submit" />
+        </form>
+    </div>
+    <script src="https://unpkg.com/vue@3.0.0"></script>
+    <script>
+        const app=Vue.createApp({
+             name:"Application",
+             data(){
+                 return {
+                 name:"Darsh"
+                 }
+             },
+             methods:{
+                 submission:e=>{
+                     e.preventDefault();
+                     console.log("getting event", e);
+                   ipcRenderer.send("user:add", [e.target[0].value, e.target[1].value, e.target[2].value]);
+                 }
+             }
+        });
+        app.mount("#app");
+        const {ipcRenderer}=require("electron");
+    </script>
+</body>
+</html>
