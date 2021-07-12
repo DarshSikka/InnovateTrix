@@ -15,26 +15,9 @@
             <label>Confirm: </label><input type="password" name="confirm" />
             <input type="submit" />
         </form>
+        {{errors}}
     </div>
     <script src="https://unpkg.com/vue@3.0.0"></script>
-    <script>
-        const app=Vue.createApp({
-             name:"Application",
-             data(){
-                 return {
-                 name:"Darsh"
-                 }
-             },
-             methods:{
-                 submission:e=>{
-                     e.preventDefault();
-                     console.log("getting event", e);
-                   ipcRenderer.send("user:add", [e.target[0].value, e.target[1].value, e.target[2].value]);
-                 }
-             }
-        });
-        app.mount("#app");
-        const {ipcRenderer}=require("electron");
-    </script>
+    <script src="mainWindow.js"></script>
 </body>
 </html>

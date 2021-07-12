@@ -13,26 +13,28 @@ let MainWindow;
 
 // Ipc main configuration for authentication
 ipcMain.on("user:add", (e, val) => {
-  console.log(val, e);
   const [username, email, password] = val;
   const userObj = { username, email, password };
   const distinctNeed = { username, email };
-  User.findOne(distinctNeed, (err, result) => {
-    console.log(err, result);
-    if (!result) {
+  User.findOne({ $or: [{ username: username }, { email: email }] }).exec(
+    (err, result) => {
       const Mod = new User(userObj);
-      Mod.save();
-    } else {
-      let errors = new Array();
-      if (result.email === User.email) {
-        errors.push("Email is taken");
+      console.log(result);
+      if (!result) {
+        Mod.save();
+      } else {
+        let errors = new Array();
+        if (result.email === Mod.email) {
+          errors.push("Email is taken");
+        }
+        if (result.username === Mod.username) {
+          errors.push("Username is taken");
+        }
+        console.log(errors);
+        MainWindow.webContents.send("error:add", errors);
       }
-      if (result.username === User.username) {
-        errors.push("Username is taken");
-      }
-      MainWindow.webContents.send("error:add", errors);
     }
-  });
+  );
 });
 //done
 
