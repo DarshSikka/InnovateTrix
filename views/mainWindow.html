@@ -59,10 +59,10 @@
             <p>Pls fill your details</p>
                     <form @submit="submission" >
                         <div class="data">
-                        <div> <label>Username: </label><br><input type="text" name="username" required /></div>
-                        <div><label>Email: </label><br><input type="email" name="email" required></div>
-                        <div><label>Password: </label><br><input type="password"id="pass" name="password" required/></div>
-                        <div><label>Confirm: </label><br><input type="password"id="confirm" name="confirm" required/></div>
+                        <div> <label>Username: </label><br><input placeholder="Username"type="text" name="username" required /></div>
+                        <div><label>Email: </label><br><input placeholder="Email" type="email" name="email" required></div>
+                        <div><label>Password: </label><br><input placeholder="Password"type="password"id="pass" name="password" required/></div>
+                        <div><label>Confirm: </label><br><input placeholder="Confirm Password"type="password"id="confirm" name="confirm" required/></div>
                         <div class="error-text"></div></div>
                         <input type="submit" class="sbtn"/>
                     </form>
@@ -71,8 +71,9 @@
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
                     <button class="btn">Sign in</button></div>
                 </div>
-                </div>
-        {{errors}}
+        <h3 style="color:red">{{errors}}</h3>
+        <h3 style="color:green">{{success}}</h3>
+        </div>
     </div>
     <script src="https://unpkg.com/vue@3.0.0"></script>
     <script src="mainWindow.js"></script>

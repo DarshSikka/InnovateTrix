@@ -1,5 +1,6 @@
 //import dependencies
 const electron = require("electron");
+const { spawn } = require("child_process");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const { app, BrowserWindow, Menu, ipcMain } = electron;
@@ -7,23 +8,36 @@ const url = require("url");
 const path = require("path");
 const User = require("./models/auth/User");
 // done importing
-
 //define the main window to use later
 let MainWindow;
 
 // Ipc main configuration for authentication
 ipcMain.on("user:add", (e, val) => {
-  const [username, email, password] = val;
-  const userObj = { username, email, password };
+  let earlyErrors = new Array();
+  const [username, email, password, confirm] = val;
+  const userObj = { username, email, password, confirm };
   const distinctNeed = { username, email };
+  const python = spawn("python3", ["python/validation.py"]);
+  python.stdin.write(`${password}\n`);
+  python.stdin.write(`${confirm}\n`);
+  console.log(confirm === password);
+  python.stdout.on("data", (data) => {
+    const dat = data.toString();
+    const json = JSON.parse(dat);
+    console.log(json);
+    if (json.type === true) {
+      earlyErrors = json.errors;
+    }
+  });
   User.findOne({ $or: [{ username: username }, { email: email }] }).exec(
     (err, result) => {
       const Mod = new User(userObj);
       console.log(result);
-      if (!result) {
+      let errors = [...earlyErrors];
+      if (!result && !errors) {
         Mod.save();
+        MainWindow.webContents.send("success:add", "User saved");
       } else {
-        let errors = new Array();
         if (result.email === Mod.email) {
           errors.push("Email is taken");
         }

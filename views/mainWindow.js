@@ -4,7 +4,8 @@ const app = Vue.createApp({
   data() {
     return {
       name: this.name,
-      errors: "No errors yet",
+      errors: "",
+      success: "",
     };
   },
   methods: {
@@ -15,12 +16,16 @@ const app = Vue.createApp({
         e.target[0].value,
         e.target[1].value,
         e.target[2].value,
+        e.target[3].value,
       ]);
     },
   },
   mounted() {
     ipcRenderer.on("error:add", (e, value) => {
       this.errors = value.join(", ");
+    });
+    ipcRenderer.on("success:add", (e, value) => {
+      this.success = value;
     });
   },
 });
