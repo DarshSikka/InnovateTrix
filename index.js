@@ -17,10 +17,10 @@ ipcMain.on("user:add", (e, val) => {
   const [username, email, password, confirm] = val;
   const userObj = { username, email, password, confirm };
   const distinctNeed = { username, email };
+  //Use python language for validation
   const python = spawn("python3", ["python/validation.py"]);
   python.stdin.write(`${password}\n`);
   python.stdin.write(`${confirm}\n`);
-  console.log(confirm === password);
   python.stdout.on("data", (data) => {
     const dat = data.toString();
     const json = JSON.parse(dat);
@@ -28,23 +28,28 @@ ipcMain.on("user:add", (e, val) => {
     if (json.type === true) {
       earlyErrors = json.errors;
     }
+    // Done validation
   });
+  //Check for user in mongoose
   User.findOne({ $or: [{ username: username }, { email: email }] }).exec(
     (err, result) => {
       const Mod = new User(userObj);
-      console.log(result);
       let errors = [...earlyErrors];
-      if (!result && !errors) {
+      console.log(errors);
+      if (!result && errors.length == 0) {
+        //If not found then save the user
+        console.log("user created");
         Mod.save();
         MainWindow.webContents.send("success:add", "User saved");
       } else {
-        if (result.email === Mod.email) {
+        //If result is found then send errors to the user
+        if (result?.email === Mod.email) {
           errors.push("Email is taken");
         }
-        if (result.username === Mod.username) {
+        if (result?.username === Mod.username) {
           errors.push("Username is taken");
         }
-        console.log(errors);
+        console.log("errors near email", errors);
         MainWindow.webContents.send("error:add", errors);
       }
     }
