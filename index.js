@@ -1,5 +1,6 @@
 //import dependencies
 const electron = require("electron");
+const { session } = require("electron");
 const { spawn } = require("child_process");
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -10,17 +11,21 @@ const User = require("./models/auth/User");
 const bcrypt = require("bcrypt");
 // done importing
 //define the main window to use later
-let signUpWindow;
-let MainWindow;
-ipcMain.on("auth:add", (e, val) => {
-  const [username, password] = val;
-  User.findOne({ username, password }, (err, result) => {
-    if (!result) {
-    }
-  });
-});
-ipcMain.on("redirect:add", (e, val) => {
-  if (val == "openSignupPopup") {
+
+class Windows {
+  signupWindow() {
+    signUpWindow =
+      //make the signUpWindow
+      new BrowserWindow({
+        width: 1000,
+        height: 800,
+        webPreferences: {
+          // Enable electron to be used in vanilla code
+          nodeIntegration: true,
+          contextIsolation: false,
+          enableRemoteModule: true,
+        },
+      });
     signUpWindow?.loadURL(
       url.format({
         pathname: path.join(__dirname, "views/signupWindow.html"),
@@ -29,12 +34,65 @@ ipcMain.on("redirect:add", (e, val) => {
       })
     );
   }
+  loginWindow() {
+    loginWindow = new BrowserWindow({
+      width: 1000,
+      height: 800,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+      },
+    });
+    loginWindow.loadURL(
+      url.format({
+        pathname: path.join(__dirname, "views/loginWindow.html"),
+        protocol: "file:",
+        slashes: true,
+      })
+    );
+  }
+}
+const windowManager = new Windows();
+let signUpWindow;
+let MainWindow;
+let loginWindow;
+ipcMain.on("auth:add", (e, val) => {
+  const [username, password] = val;
+  User.findOne({ username, password }, (err, result) => {
+    if (!result) {
+      loginWindow.webContents.send("error:add", "Invalid Email/Password");
+    } else {
+      loginWindow.webContents.send("userrender:add", result);
+      session.defaultSession.cookies.set({
+        name: "current_user",
+        url: url.format({
+          pathname: path.join(__dirname, "views/mainWindow.html"),
+          protocol: "file:",
+          slashes: true,
+        }),
+        httpOnly: true,
+        expirationDate: Date.now() + 2.628e9,
+      });
+    }
+  });
+});
+ipcMain.on("redirect:add", (e, val) => {
+  switch (val) {
+    case "openSignupPopup":
+      windowManager.signupWindow();
+      break;
+    case "openLoginPopup":
+      windowManager.loginWindow();
+      break;
+  }
 });
 // Ipc main configuration for authentication
 ipcMain.on("user:add", (e, val) => {
   let earlyErrors = new Array();
-  const [username, email, password, confirm] = val;
-  const userObj = { username, email, password, confirm };
+  const [username, email, password, confirm, image] = val;
+  console.log(image);
+  const userObj = { username, email, password, confirm, image };
   //Use python language for validation
   const python = spawn("python3", ["python/validation.py"]);
   python.stdin.write(`${password}\n`);
@@ -46,33 +104,33 @@ ipcMain.on("user:add", (e, val) => {
     if (json.type === true) {
       earlyErrors = json.errors;
     }
-    // Done validation
-  });
-  //Check for user in mongoose
-  User.findOne({ $or: [{ username: username }, { email: email }] }).exec(
-    (err, result) => {
-      const Mod = new User(userObj);
-      let errors = [...earlyErrors];
-      console.log(errors);
-      if (!result && errors.length == 0) {
-        //If not found then save the user
-        console.log("user created");
-        Mod.save();
-        console.log(Mod._id);
-        signUpWindow.webContents.send("success:add", "User saved");
-      } else {
-        //If result is found then send errors to the user
-        if (result?.email === Mod.email) {
-          errors.push("Email is taken");
+    User.findOne({ $or: [{ username: username }, { email: email }] }).exec(
+      (err, result) => {
+        console.log("Execking");
+        const Mod = new User(userObj);
+        let errors = [...earlyErrors];
+        console.log(errors);
+        if (!result && errors.length == 0) {
+          //If not found then save the user
+          console.log("user created");
+          Mod.save();
+          console.log(Mod._id);
+          signUpWindow.webContents.send("success:add", "User saved");
+        } else {
+          //If result is found then send errors to the user
+          if (result?.email === Mod.email) {
+            errors.push("Email is taken");
+          }
+          if (result?.username === Mod.username) {
+            errors.push("Username is taken");
+          }
+          console.log("errors near email", errors);
+          signUpWindow.webContents.send("error:add", errors);
         }
-        if (result?.username === Mod.username) {
-          errors.push("Username is taken");
-        }
-        console.log("errors near email", errors);
-        signUpWindow.webContents.send("error:add", errors);
       }
-    }
-  );
+    );
+  });
+  // Done validation
 });
 //done
 
@@ -102,18 +160,6 @@ const MenuMainTemplate = [
 ];
 // set up the main window when app is ready
 app.on("ready", () => {
-  signUpWindow =
-    //make the signUpWindow
-    new BrowserWindow({
-      width: 1000,
-      height: 800,
-      webPreferences: {
-        // Enable electron to be used in vanilla code
-        nodeIntegration: true,
-        contextIsolation: false,
-        enableRemoteModule: true,
-      },
-    });
   MainWindow = new BrowserWindow({
     width: 1500,
     height: 900,
@@ -129,6 +175,10 @@ app.on("ready", () => {
       protocol: "file:",
       slashes: true,
     })
+  );
+  MainWindow.webContents.send(
+    "userrender:add",
+    session.defaultSession.cookies.get({ name: "current_user" })
   );
   //Build the menu from the menu template array
   const menu = Menu.buildFromTemplate(MenuMainTemplate);

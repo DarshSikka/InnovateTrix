@@ -63,6 +63,7 @@
                         <div><label>Email: </label><br><input placeholder="Email" type="email" name="email" required></div>
                         <div><label>Password: </label><br><input placeholder="Password"type="password"id="pass" name="password" required/></div>
                         <div><label>Confirm: </label><br><input placeholder="Confirm Password"type="password"id="confirm" name="confirm" required/></div>
+                        <input type="file" accept="image/*" />
                         <div class="error-text"></div></div>
                         <input type="submit" class="sbtn"/>
 
@@ -72,7 +73,7 @@
                     </div>
                     <div class="sgin"><h1>Welcome back</h1> 
                     <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                    <button class="btn">Sign in</button></div>
+                    <button @click="signin"class="btn">Sign in</button></div>
                 </div>
         </div>
     </div>

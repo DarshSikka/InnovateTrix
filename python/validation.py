@@ -14,7 +14,7 @@ def validation(p, c):
     if confirm!=password: 
         errors.append("Passwords don't match")
         flag = 0
-    else:
+    if(confirm==password and len(password)>8):
         flag=-1
     if flag == -1:
         print(json.dumps(res))
