@@ -5,6 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login to resource sharer</title>
+    <link rel="stylesheet" href="stylesheets/login.css" />
+    <script src="https://unpkg.com/vue@3.0.0" defer></script>
+    <script src="scripts/loginWindow.js" defer></script>
 </head>
 <body>
     <div id="app">
@@ -13,8 +16,7 @@
             <input type="password" placeholder="Password" />
             <input type="submit" />
         </form>
+        <h4 :class="color">{{errors}}</h4>
     </div>
-    <script src="https://unpkg.com/vue@3.0.0"></script>
-    <script src="scripts/loginWindow.js"></script>
 </body>
 </html>

@@ -1,0 +1,10 @@
+:root {
+  --success: green;
+  --failure: red;
+}
+.red {
+  color: var(--failure);
+}
+.green {
+  color: var(--success);
+}

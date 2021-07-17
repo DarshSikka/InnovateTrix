@@ -14,8 +14,12 @@ const app = Vue.createApp({
   },
   mounted() {
     ipcRenderer.on("userrender:add", (e, val) => {
-      this.user = value;
+      this.user = val;
+      console.log(this.user);
     });
+    if (localStorage.getItem("userid") != "undefined") {
+      ipcRenderer.send("homeuser:add", localStorage.getItem("userid"));
+    }
   },
 });
 app.mount("#app");

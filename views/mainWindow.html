@@ -11,6 +11,8 @@
     <button @click="signupRedirect()">
         Login/Signup
     </button>
+    WELCOME {{user.username || "GUSET"}}
+    <img :src="user.profile">
 </div>
 <script src="https://unpkg.com/vue@3.0.0"></script>
 <script src="scripts/mainWindow.js"></script>

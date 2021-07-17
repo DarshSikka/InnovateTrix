@@ -11,7 +11,20 @@ const User = require("./models/auth/User");
 const bcrypt = require("bcrypt");
 // done importing
 //define the main window to use later
-
+ipcMain.on("homeuser:add", (e, val) => {
+  User.findOne({ _id: val }, (err, result) => {
+    if (!result) {
+      throw new Error("Some problem with the user id");
+    } else {
+      MainWindow.webContents.send("userrender:add", {
+        _id: result._id,
+        username: result.username,
+        profile: result.image,
+        email: result.email,
+      });
+    }
+  });
+});
 class Windows {
   signupWindow() {
     signUpWindow =
@@ -34,7 +47,7 @@ class Windows {
       })
     );
   }
-  loginWindow() {
+  loginWindowMaker() {
     loginWindow = new BrowserWindow({
       width: 1000,
       height: 800,
@@ -57,23 +70,27 @@ const windowManager = new Windows();
 let signUpWindow;
 let MainWindow;
 let loginWindow;
-ipcMain.on("auth:add", (e, val) => {
-  const [username, password] = val;
+ipcMain.on("checkuser:add", (e, val) => {
+  const { username, password } = val;
+  console.log(val);
   User.findOne({ username, password }, (err, result) => {
     if (!result) {
-      loginWindow.webContents.send("error:add", "Invalid Email/Password");
-    } else {
-      loginWindow.webContents.send("userrender:add", result);
-      session.defaultSession.cookies.set({
-        name: "current_user",
-        url: url.format({
-          pathname: path.join(__dirname, "views/mainWindow.html"),
-          protocol: "file:",
-          slashes: true,
-        }),
-        httpOnly: true,
-        expirationDate: Date.now() + 2.628e9,
+      loginWindow.webContents.send("errorauth:add", {
+        custom: {
+          error: true,
+          message: "Wrong username/password",
+        },
       });
+    } else {
+      loginWindow.webContents.send("errorauth:add", {
+        custom: {
+          error: false,
+          message: "Logged In",
+        },
+        data: result._id.toString(),
+      });
+      console.log(result._id);
+      console.log(typeof result._id);
     }
   });
 });
@@ -83,7 +100,7 @@ ipcMain.on("redirect:add", (e, val) => {
       windowManager.signupWindow();
       break;
     case "openLoginPopup":
-      windowManager.loginWindow();
+      windowManager.loginWindowMaker();
       break;
   }
 });
@@ -150,9 +167,11 @@ mongoose.connect(
 const MenuMainTemplate = [
   {
     label: "App",
+    role: "nothin",
     submenu: [
       {
         label: "Signup",
+        role: "nothing",
         click() {},
       },
     ],
@@ -175,10 +194,6 @@ app.on("ready", () => {
       protocol: "file:",
       slashes: true,
     })
-  );
-  MainWindow.webContents.send(
-    "userrender:add",
-    session.defaultSession.cookies.get({ name: "current_user" })
   );
   //Build the menu from the menu template array
   const menu = Menu.buildFromTemplate(MenuMainTemplate);
