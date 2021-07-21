@@ -1,6 +1,6 @@
 //import dependencies
 const electron = require("electron");
-const { session } = require("electron");
+const Resource = require("./models/data/Resource");
 const { spawn } = require("child_process");
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -8,13 +8,57 @@ const { app, BrowserWindow, Menu, ipcMain } = electron;
 const url = require("url");
 const path = require("path");
 const User = require("./models/auth/User");
-const bcrypt = require("bcrypt");
+const Mailbox = require("./models/data/Mailbox");
 // done importing
 //define the main window to use later
+ipcMain.on("viewresourceuser:add", (e, val) => {
+  User.findOne({ _id: val }, (err, result) => {
+    if (!result) {
+      console.error("Guest RN");
+    } else {
+      resourceView.webContents.send("userrender:add", result._doc);
+    }
+  });
+});
+ipcMain.on("window:clear", (e, val) => {
+  switch (val) {
+    case "viewResource":
+      resourceView.close();
+  }
+});
+ipcMain.on("mail:add", (e, val) => {
+  console.log(val);
+  const { from, to, subject, content } = val;
+  const mail = new Mailbox({ from, to, subject, content });
+  mail.save();
+});
+ipcMain.on("reload:add", (e, val) => {
+  app.relaunch();
+  app.quit();
+});
+ipcMain.on("rgit:add", (e, val) => {
+  Resource.findOne({ _id: val }, (err, result) => {
+    resourceView.webContents.send("resourcerender:add", result);
+    console.log(result);
+  });
+});
+ipcMain.on("resuser:add", (e, val) => {
+  User.findOne({ _id: val }, (err, result) => {
+    if (!result) {
+      console.error("Some problem with the user id");
+    } else {
+      resourceWindow.webContents.send("userrender:add", {
+        _id: result._id,
+        username: result.username,
+        profile: result.image,
+        email: result.email,
+      });
+    }
+  });
+});
 ipcMain.on("homeuser:add", (e, val) => {
   User.findOne({ _id: val }, (err, result) => {
     if (!result) {
-      throw new Error("Some problem with the user id");
     } else {
       MainWindow.webContents.send("userrender:add", {
         _id: result._id,
@@ -65,11 +109,68 @@ class Windows {
       })
     );
   }
+  resourceWindowMaker() {
+    resourceWindow = new BrowserWindow({
+      width: 1000,
+      height: 800,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+      },
+    });
+    resourceWindow.loadURL(
+      url.format({
+        pathname: path.join(__dirname, "views/resourceForm.html"),
+        protocol: "file:",
+        slashes: true,
+      })
+    );
+  }
+  viewResourceMaker() {
+    resourceView = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+      },
+    });
+    resourceView.loadURL(
+      url.format({
+        pathname: path.join(__dirname, "views/viewResource.html"),
+        protocol: "file:",
+        slashes: true,
+      })
+    );
+  }
+  mailboxWindow() {
+    mailbox = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+      },
+    });
+    mailbox.loadURL(
+      url.format({
+        pathname: path.join(__dirname, "views/mail.html"),
+        protocol: "file:",
+        slashes: true,
+      })
+    );
+  }
 }
 const windowManager = new Windows();
 let signUpWindow;
 let MainWindow;
 let loginWindow;
+let resourceWindow;
+let resourceView;
+let mailbox;
 ipcMain.on("checkuser:add", (e, val) => {
   const { username, password } = val;
   console.log(val);
@@ -94,6 +195,29 @@ ipcMain.on("checkuser:add", (e, val) => {
     }
   });
 });
+ipcMain.on("resource:add", (e, val) => {
+  const rsrc = new Resource(val);
+  rsrc.save();
+  resourceWindow.webContents.send("created:add", rsrc._id.toString());
+});
+ipcMain.on("requestall:add", (e, val) => {
+  Resource.find({ available: true })
+    .sort({ createdAt: "descending" })
+    .exec((err, result) => {
+      switch (val) {
+        case "mainWindow":
+          MainWindow.webContents.send(
+            "resrenderer:add",
+            result.map((ele) => {
+              const doc = ele._doc;
+              doc._id = doc._id.toString();
+              return doc;
+            })
+          );
+          console.log(result);
+      }
+    });
+});
 ipcMain.on("redirect:add", (e, val) => {
   switch (val) {
     case "openSignupPopup":
@@ -102,6 +226,10 @@ ipcMain.on("redirect:add", (e, val) => {
     case "openLoginPopup":
       windowManager.loginWindowMaker();
       break;
+    case "openResourcePopup":
+      windowManager.resourceWindowMaker();
+    case "openViewResource":
+      windowManager.viewResourceMaker();
   }
 });
 // Ipc main configuration for authentication
@@ -174,7 +302,17 @@ const MenuMainTemplate = [
         role: "nothing",
         click() {},
       },
+      {
+        label: "mailbox",
+        click() {
+          windowManager.mailboxWindow();
+        },
+      },
     ],
+  },
+  {
+    label: "Utility",
+    submenu: [{ role: "reload" }],
   },
 ];
 // set up the main window when app is ready
@@ -214,7 +352,6 @@ if (process.env.NODE_ENV !== "production") {
           win.toggleDevTools();
         },
       },
-      { role: "reload" },
     ],
   });
   try {
