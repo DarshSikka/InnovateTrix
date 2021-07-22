@@ -20,6 +20,7 @@ const app = Vue.createApp({
         Their address is ${address}`,
         from: this.user.username,
         to: this.dat.createdBy?.username,
+        resourceId: this.dat._id,
       });
       alert(`A message has been sent to ${this.dat.createdBy.username}`);
       ipcRenderer.send("window:clear", "viewResource");
@@ -32,8 +33,7 @@ const app = Vue.createApp({
     });
     ipcRenderer.send("rgit:add", localStorage.getItem("resid"));
     ipcRenderer.on("resourcerender:add", (e, val) => {
-      console.log(val);
-      this.dat = val._doc;
+      this.dat = val;
       this.mailtothisguy = `mailto:${this.dat.createdBy.email}`;
     });
     ipcRenderer.on("userrender:add", (e, val) => {

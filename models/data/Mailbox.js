@@ -16,6 +16,10 @@ const schema = new mongoose.Schema({
     type: Object,
     required: true,
   },
+  resourceId: {
+    type: Object,
+    required: true,
+  },
 });
 const Mailbox = mongoose.model("Mailbox", schema, "mails");
 module.exports = Mailbox;

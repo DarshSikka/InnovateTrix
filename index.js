@@ -11,6 +11,26 @@ const User = require("./models/auth/User");
 const Mailbox = require("./models/data/Mailbox");
 // done importing
 //define the main window to use later
+ipcMain.on("resolve:add", (e, val) => {
+  console.log(val);
+  Resource.findOneAndUpdate(
+    { _id: val },
+    { available: false },
+    (err, result) => {
+      console.log(result);
+    }
+  );
+});
+ipcMain.on("askmail:add", (e, val) => {
+  Mailbox.find({ to: val }, (err, result) => {
+    mailbox.webContents.send("mailrender:add", result);
+  });
+});
+ipcMain.on("mailuser:add", (e, val) => {
+  User.findOne({ _id: val }, (err, result) => {
+    mailbox.webContents.send("userrender:add", result);
+  });
+});
 ipcMain.on("viewresourceuser:add", (e, val) => {
   User.findOne({ _id: val }, (err, result) => {
     if (!result) {
@@ -27,9 +47,8 @@ ipcMain.on("window:clear", (e, val) => {
   }
 });
 ipcMain.on("mail:add", (e, val) => {
-  console.log(val);
-  const { from, to, subject, content } = val;
-  const mail = new Mailbox({ from, to, subject, content });
+  const { from, to, subject, content, resourceId } = val;
+  const mail = new Mailbox({ from, to, subject, content, resourceId });
   mail.save();
 });
 ipcMain.on("reload:add", (e, val) => {
@@ -38,8 +57,10 @@ ipcMain.on("reload:add", (e, val) => {
 });
 ipcMain.on("rgit:add", (e, val) => {
   Resource.findOne({ _id: val }, (err, result) => {
-    resourceView.webContents.send("resourcerender:add", result);
-    console.log(result);
+    resourceView.webContents.send("resourcerender:add", {
+      ...result._doc,
+      _id: result._doc._id.toString(),
+    });
   });
 });
 ipcMain.on("resuser:add", (e, val) => {
@@ -173,7 +194,6 @@ let resourceView;
 let mailbox;
 ipcMain.on("checkuser:add", (e, val) => {
   const { username, password } = val;
-  console.log(val);
   User.findOne({ username, password }, (err, result) => {
     if (!result) {
       loginWindow.webContents.send("errorauth:add", {
@@ -190,8 +210,6 @@ ipcMain.on("checkuser:add", (e, val) => {
         },
         data: result._id.toString(),
       });
-      console.log(result._id);
-      console.log(typeof result._id);
     }
   });
 });
@@ -214,7 +232,6 @@ ipcMain.on("requestall:add", (e, val) => {
               return doc;
             })
           );
-          console.log(result);
       }
     });
 });
@@ -236,7 +253,6 @@ ipcMain.on("redirect:add", (e, val) => {
 ipcMain.on("user:add", (e, val) => {
   let earlyErrors = new Array();
   const [username, email, password, confirm, image] = val;
-  console.log(image);
   const userObj = { username, email, password, confirm, image };
   //Use python language for validation
   const python = spawn("python3", ["python/validation.py"]);
@@ -245,21 +261,16 @@ ipcMain.on("user:add", (e, val) => {
   python.stdout.on("data", (data) => {
     const dat = data.toString();
     const json = JSON.parse(dat);
-    console.log(json);
     if (json.type === true) {
       earlyErrors = json.errors;
     }
     User.findOne({ $or: [{ username: username }, { email: email }] }).exec(
       (err, result) => {
-        console.log("Execking");
         const Mod = new User(userObj);
         let errors = [...earlyErrors];
-        console.log(errors);
         if (!result && errors.length == 0) {
           //If not found then save the user
-          console.log("user created");
           Mod.save();
-          console.log(Mod._id);
           signUpWindow.webContents.send("success:add", "User saved");
         } else {
           //If result is found then send errors to the user
@@ -269,7 +280,6 @@ ipcMain.on("user:add", (e, val) => {
           if (result?.username === Mod.username) {
             errors.push("Username is taken");
           }
-          console.log("errors near email", errors);
           signUpWindow.webContents.send("error:add", errors);
         }
       }
