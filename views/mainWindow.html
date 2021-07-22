@@ -5,12 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Page</title>
+    <link rel="stylesheet/less" type="text/css" href="stylesheets/main.less" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js"></script>
 </head>
 <body>
     <div id="app">
-    <button @click="signupRedirect()">
-        Login/Signup
-    </button>
+        <nav>
+        WELCOME {{user.username || "GUEST"}}
+        <img height="50" class="profile":src="user.profile" @click="displayHidden()">
+    </nav>
+
+    <input type="text" placeholder="Search Donations" @change="search"/>
+    <div profilemanager v-if="displayhidden">
+        <button @click="signupRedirect()" signupbutton>
+            Login/Signup
+        </button>
+    </div>
+<div class="main">
+    <div id="resources">
+        <div class="resource" v-for="resource in visible" @click="setRes(resource._id)">
+            {{resource.name}}
+        </div>
+    </div>
+    <button @click="resourceRedirect()">Donate resource</button>
+</div>
 </div>
 <script src="https://unpkg.com/vue@3.0.0"></script>
 <script src="scripts/mainWindow.js"></script>

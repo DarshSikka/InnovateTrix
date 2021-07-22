@@ -50,11 +50,5 @@
       });
     },
   });
-
-  //ipcRenderer.on("error:add", (e, value) => {
-  //const ele = document.createElement("div");
-  //ele.appendChild(document.createTextNode(String(value)));
-  //document.body.appendChild(ele);*/
-  //});
   app.mount("#app");
 })();

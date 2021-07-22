@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View resource</title>
+    <script src="https://unpkg.com/vue@3.0.0" defer></script>
+    <script src="scripts/viewResource.js" defer></script>
+    <link rel="stylesheet/less" type="text/css" href="stylesheets/viewResource.less" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/less.js/2.5.1/less.min.js"></script>
+</head>
+<body>
+    <div id="app">
+{{user?.username}}
+<h1>{{dat?.name}}</h1>
+<div class="container">
+<p class="description">{{dat?.description}}</p>
+</div>
+<img :src="dat?.image" />
+<h3>
+    Offered by:
+{{dat?.createdBy?.username}}
+</h3>
+<h3>Contact:
+<a :href="mailtothisguy">
+{{dat?.createdBy?.email}}
+</a>
+</h3>
+<h4>Country: {{dat?.address?.country}}</h4>
+<h4>State: {{dat.address?.state}}</h4>
+<h5>
+Address:
+{{dat.address?.completeAddress}}
+</h5>
+<h5>Pincode: {{dat.address?.pincode}}</h5>
+
+<textarea required placeholder="Provide the full address you live in" name="txtar"></textarea>
+<button type="submit" @click="mailSend()">Request this</button>
+</div>
+</body>
+</html>

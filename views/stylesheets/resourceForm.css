@@ -1,0 +1,31 @@
+textarea {
+  height: 300px;
+  width: 300px;
+  border: 1px solid blue;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 20%;
+}
+select {
+  height: 50px;
+  border: 1px solid blue;
+  font-size: 20px;
+}
+form * {
+  margin-top: 20px;
+}
+input {
+  font-size: 20px;
+  border: 1px solid blue;
+  height: 50px;
+  width: 500px;
+}
+label {
+  font-size: 20px;
+}
+.noborder {
+  border: 0px;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donate your resource</title>
+    <link rel="stylesheet" href="stylesheets/resourceForm.css" />
+    <script src="https://unpkg.com/vue@3.0.0" defer></script>
+    <script src="scripts/resourceForm.js" defer></script>
+</head>
+<body style="display:flex;justify-content:center;">
+    <div id="vueapp">
+        <h1 v-if="usr.username">Thanks {{usr.username}} for choosing to donate!</h1>
+        <h1 v-if="!usr.username">You are not signed in!</h1>
+    <form @submit="submit" v-if="usr.username && !this.code">
+        <label>Name of resource:</label><input required type="text" placeholder="name" />
+        <label>Category:</label>
+        <select required>
+            <option value="NA" disabled selected>Select category: </option>
+            <option value="Medical">Medical</option>
+            <option value="Home Survival for Patients">Home Survival for Patients</option>
+            <option value="Hospital Help">Hospital Help</option>
+            <option value="Food">Food</option>
+            <option value="General">Other</option>
+        </select>
+        <fieldset>
+            <legend>Address</legend>
+            <label>City</label><br />
+            <input required list="city-list" type="text" placeholder="city"/>
+            <datalist id="city-list">
+                <option value="New Delhi"></option>
+                <option value="Mumbai"></option>
+                <option value="New York"></option>
+                <option value="Bengaluru"></option>
+                <option value="Kolkata"></option>
+            </datalist><br />
+            <label>State</label><br />
+            <input required list="state-list" type="text" placeholder="state">
+            <datalist id="state-list">
+                <option value="Delhi"></option>
+                <option value="Maharashtra"></option>
+                <option value="West Bengal"></option>
+                <option value="Karnataka"></option>
+            </datalist><br />
+            <label>Country</label><br />
+            <input required list="country-list" type="text" placeholder="contry" />
+            <datalist id="country-list">
+                <option value="India"></option>
+                <option value="United States"></option>
+                <option value="United Kingdom"></option>
+            </datalist>
+            <textarea required placeholder="Complete address with tower, apartment, street etc."></textarea>
+            <br />
+        <label>Pin code</label><br /><input placeholder="Pin Code"type="text" minlength="6" maxlength="6" />
+        </fieldset>
+        <fieldset>
+            <legend>Elaborate</legend>
+            <label>Description: </label><br />
+        <textarea required minlength="200" maxlength="2000"placeholder="Description"></textarea><br />
+        <label>Photo 1: Main image and required</label>
+        <input type="file" class="noborder"/>
+        </fieldset>
+        <label>Your details will go public when you submit this form, including email</label>
+        <input type="submit" value="Help the world"/>
+    </form>
+    <checkout v-if="code">Your resource can be found with code: {{code}}
+      Reload the homepage using Utility > Reload to see it
+    </checkout>
+    </div>
+</body>
+</html>
