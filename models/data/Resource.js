@@ -32,6 +32,10 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  delivered: {
+    type: Boolean,
+    default: false,
+  },
 });
 const Resource = mongoose.model("Resource", schema, "resources");
 module.exports = Resource;

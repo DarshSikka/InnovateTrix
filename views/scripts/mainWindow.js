@@ -1,5 +1,4 @@
 const { ipcRenderer } = require("electron");
-
 const app = Vue.createApp({
   name: "MyApp",
   data() {
@@ -11,6 +10,13 @@ const app = Vue.createApp({
       resources: [],
       visible: [],
       displayhidden: false,
+      filters: [
+        "Medical",
+        "Hospital Help",
+        "Home Survival for Patients",
+        "Food",
+        "General",
+      ],
     };
   },
   methods: {
@@ -19,6 +25,24 @@ const app = Vue.createApp({
     },
     resourceRedirect() {
       ipcRenderer.send("redirect:add", "openResourcePopup");
+    },
+    filtering(e) {
+      e.preventDefault();
+      const [a, b, c, d, f] = e.target;
+      const marr = [a, b, c, d, f];
+      let newFilters = new Array();
+      marr.forEach((ele) => {
+        console.log(ele.checked);
+        if (ele.checked) {
+          newFilters.push(ele.value);
+        }
+      });
+      this.filters = newFilters;
+      let ef = document.querySelector("input[srch]");
+      const newVisible = this.resources.filter((m) => {
+        return m.name.includes(ef.value) && this.filters.includes(m.category);
+      });
+      this.visible = newVisible;
     },
     displayHidden() {
       this.displayhidden
@@ -30,11 +54,27 @@ const app = Vue.createApp({
       console.log(id);
       ipcRenderer.send("redirect:add", "openViewResource");
     },
+    loginRedirect() {
+      ipcRenderer.send("redirect:add", "openLoginPopup");
+    },
     search(e) {
-      const newVisible = this.resources.filter((m) =>
-        m.name.includes(e.target.value)
-      );
+      const newVisible = this.resources.filter((m) => {
+        return (
+          m.name.includes(e.target.value) && this.filters.includes(m.category)
+        );
+      });
       this.visible = newVisible;
+    },
+    logout() {
+      localStorage.removeItem("userid");
+      ipcRenderer.send("reload:add");
+    },
+    voulunteer() {
+      ipcRenderer.send("voulunteer:add", {
+        username: this.user.username,
+        email: this.user.email,
+      });
+      alert("Added to voulunteer list!");
     },
   },
   mounted() {

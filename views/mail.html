@@ -13,7 +13,8 @@
         <div v-for="mail in mails">
             <h2>{{mail._doc.subject}}</h2>
             <h3>{{mail._doc.content}}</h3>
-            <button @click="resolveid(mail._doc.resourceId)">Mark as accepted</button>
+            {{mail._doc._id}}
+            <button @click="resolveid(mail._doc.resourceId, mail._doc._id, mail._doc.content)">Mark as accepted</button>
         </div>
     </div>
 </body>
