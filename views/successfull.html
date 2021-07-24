@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivered by share it care it</title>
+    <script src="https://unpkg.com/vue@3.0.0" defer></script>
+    <script src="scripts/successfull.js" defer></script>
+</head>
+<body>
+ <div id="app">
+   <div v-for="item in lst">
+       <strong>{{item._doc.name}}</strong> delivered by <strong>{{item._doc.doneBy}}</strong>
+   </div>
+ </div>
+</body>
+</html>

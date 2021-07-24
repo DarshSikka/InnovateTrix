@@ -9,21 +9,124 @@ const url = require("url");
 const path = require("path");
 const User = require("./models/auth/User");
 const Mailbox = require("./models/data/Mailbox");
-// done importing
-//define the main window to use later
-ipcMain.on("resolve:add", (e, val) => {
+const Voulunteer = require("./models/auth/Voulunteer");
+const { sendMail } = require("./models/mail/Notify");
+const Task = require("./models/data/Task");
+const Success = require("./models/data/Success");
+ipcMain.on("getsuccess:add", async (e, val) => {
+  const successfull = await Success.find({});
+  successWindow.webContents.send("render:add", successfull);
+});
+ipcMain.on("getassigned:add", (e, val) => {
+  Task.findOne({ assignedTo: val }, (err, result) => {
+    if (!result) {
+      taskbox.webContents.send("renderassigned:add", {});
+    } else {
+      Resource.findOne({ _id: result._doc.resourceId }, (err, result2) => {
+        result._doc._id = result._doc._id.toString();
+        taskbox.webContents.send("renderassigned:add", {
+          resource: result2,
+          task: result,
+        });
+      });
+      console.log("Id of task", result._id);
+    }
+  });
+});
+ipcMain.on("task:clear", (e, val) => {
+  Task.findOneAndDelete({ _id: val.id }).exec(async (err, result) => {
+    const resource = await Resource.findOne({ _id: result.resourceId });
+    const success = new Success({
+      name: resource.name,
+      doneBy: val.username,
+    });
+    success.save();
+  });
+});
+ipcMain.on("voulunteer:add", (e, data) => {
+  const vt = new Voulunteer(data);
+  vt.save();
+});
+ipcMain.on("assign:add", (e, val) => {
   console.log(val);
+  Task.findOneAndUpdate(
+    { _id: val.id },
+    { assigned: true, assignedTo: val.assignedTo },
+    (err, result) => {
+      if (err) console.error(err);
+      else {
+        console.log("result=", result);
+      }
+    }
+  );
+});
+ipcMain.on("taskuser:add", (e, val) => {
+  User.findOne({ _id: val }, (err, result) => {
+    taskbox.webContents.send("userrender:add", result);
+  });
+});
+ipcMain.on("asktask:add", (e, val) => {
+  User.findOne({ _id: val }, (err, res) => {
+    Task.find({ assigned: false }, async (err, result) => {
+      result = result.filter((ele) => ele.to.includes(res.username));
+      result = await Promise.all(
+        result.map(async (ele) => {
+          const { address, name } = await Resource.findOne({
+            _id: ele.resourceId,
+          });
+          ele._doc.sender = address;
+          ele._doc.name = name;
+          ele._doc._id = ele._doc._id.toString();
+          return ele;
+        })
+      );
+      console.log(result);
+      taskbox.webContents.send("render:add", result);
+    });
+  });
+});
+ipcMain.on("task:add", (e, data) => {
+  Voulunteer.find({}).exec((err, result) => {
+    data.to = result.map((element) => element.username);
+    const t = new Task(data);
+    console.log(t);
+    t.save();
+  });
+});
+ipcMain.on("officialmail:add", (e, val) => {
+  Voulunteer.find({}).exec((err, result) => {
+    sendMail(
+      result.map((ele) => ele.email),
+      `Check Voulunteer mailbox for a new delivery`,
+      "Delivery news"
+    );
+  });
+});
+ipcMain.on("mail:clear", (e, val) => {
+  Mailbox.findOneAndRemove({ _id: val }, (err, result) => {
+    if (err) console.error(err);
+    else {
+      mailbox.reload();
+    }
+  });
+});
+ipcMain.on("resolve:add", (e, val) => {
   Resource.findOneAndUpdate(
     { _id: val },
     { available: false },
-    (err, result) => {
-      console.log(result);
-    }
+    (err, result) => {}
   );
 });
 ipcMain.on("askmail:add", (e, val) => {
   Mailbox.find({ to: val }, (err, result) => {
-    mailbox.webContents.send("mailrender:add", result);
+    mailbox.webContents.send(
+      "mailrender:add",
+      result.map((ele) => {
+        const cloned = ele;
+        cloned._doc._id = ele._doc._id.toString();
+        return cloned;
+      })
+    );
   });
 });
 ipcMain.on("mailuser:add", (e, val) => {
@@ -184,6 +287,42 @@ class Windows {
       })
     );
   }
+  taskboxWindow() {
+    taskbox = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+      },
+    });
+    taskbox.loadURL(
+      url.format({
+        pathname: path.join(__dirname, "views/taskbox.html"),
+        protocol: "file:",
+        slashes: true,
+      })
+    );
+  }
+  successWindow() {
+    successWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        enableRemoteModule: true,
+      },
+    });
+    successWindow.loadURL(
+      url.format({
+        pathname: path.join(__dirname, "views/successfull.html"),
+        protocol: "file:",
+        slashes: true,
+      })
+    );
+  }
 }
 const windowManager = new Windows();
 let signUpWindow;
@@ -192,6 +331,8 @@ let loginWindow;
 let resourceWindow;
 let resourceView;
 let mailbox;
+let taskbox;
+let successWindow;
 ipcMain.on("checkuser:add", (e, val) => {
   const { username, password } = val;
   User.findOne({ username, password }, (err, result) => {
@@ -245,8 +386,10 @@ ipcMain.on("redirect:add", (e, val) => {
       break;
     case "openResourcePopup":
       windowManager.resourceWindowMaker();
+      break;
     case "openViewResource":
       windowManager.viewResourceMaker();
+      break;
   }
 });
 // Ipc main configuration for authentication
@@ -318,6 +461,18 @@ const MenuMainTemplate = [
           windowManager.mailboxWindow();
         },
       },
+      {
+        label: "taskbox",
+        click() {
+          windowManager.taskboxWindow();
+        },
+      },
+      {
+        label: "Successfull deliveries",
+        click() {
+          windowManager.successWindow();
+        },
+      },
     ],
   },
   {
@@ -351,7 +506,6 @@ app.on("ready", () => {
 });
 
 //Insert developer tools if not production environment
-
 if (process.env.NODE_ENV !== "production") {
   MenuMainTemplate.push({
     label: "Developer Tools",

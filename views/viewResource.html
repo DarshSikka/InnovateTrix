@@ -34,9 +34,10 @@ Address:
 {{dat.address?.completeAddress}}
 </h5>
 <h5>Pincode: {{dat.address?.pincode}}</h5>
-
+<div v-if="user.username">
 <textarea required placeholder="Provide the full address you live in" name="txtar"></textarea>
 <button type="submit" @click="mailSend()">Request this</button>
+</div>
 </div>
 </body>
 </html>
