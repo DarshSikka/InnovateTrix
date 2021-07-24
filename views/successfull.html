@@ -12,6 +12,7 @@
  <div id="app">
    <div v-for="item in lst">
        <strong>{{item._doc.name}}</strong> delivered by <strong>{{item._doc.doneBy}}</strong>
+       and donated by {{item._doc.donatedBy}}
    </div>
  </div>
 </body>

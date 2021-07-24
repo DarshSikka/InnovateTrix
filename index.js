@@ -39,6 +39,7 @@ ipcMain.on("task:clear", (e, val) => {
     const success = new Success({
       name: resource.name,
       doneBy: val.username,
+      donatedBy: resource.createdBy.username,
     });
     success.save();
   });

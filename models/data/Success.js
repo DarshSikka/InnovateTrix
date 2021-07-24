@@ -8,6 +8,10 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  donatedBy: {
+    type: String,
+    required: true,
+  },
 });
 const Success = mongoose.model("Success", schema, "completed");
 module.exports = Success;
