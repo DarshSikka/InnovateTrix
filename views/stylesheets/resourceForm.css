@@ -29,3 +29,14 @@ label {
 .noborder {
   border: 0px;
 }
+.btn {
+  width: 100px;
+  height: 30px;
+  background: #cdf0ea;
+  border-radius: 4px;
+  border: none;
+  transition: 1s ease-in-out;
+}
+.btn:hover {
+  background: #8eebdb;
+}

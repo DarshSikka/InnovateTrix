@@ -11,8 +11,9 @@
 <body>
     <div id="app">
         <nav>
-        WELCOME {{user.username || "GUEST"}}
+        <h1 class="h">WELCOME {{user.username || "GUEST"}}</h1>
         <img height="50" class="profile":src="user.profile" @click="displayHidden()">
+        
     </nav>
     <div profilemanager v-if="displayhidden">
         <button @click="signupRedirect()" signupbutton>
@@ -29,7 +30,7 @@
         </button>
     </div>
 <div class="main">
-    <input type="text" placeholder="Search Donations" srch @change="search"/>
+    <input class="input" type="text" placeholder="Search Donations" srch @change="search"/>
     <form @submit="filtering">
     <div>
         <label>Medical:</label>
@@ -57,8 +58,9 @@
         <div class="resource" v-for="resource in visible" @click="setRes(resource._id)">
             {{resource.name}}
         </div>
+          <button class="donate-btn" @click="resourceRedirect()">Donate resource</button>
     </div>
-    <button @click="resourceRedirect()">Donate resource</button>
+  
 </div>
 </div>
 <script src="https://unpkg.com/vue@3.0.0"></script>

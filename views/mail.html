@@ -7,15 +7,18 @@
     <script src="https://unpkg.com/vue@3.0.0" defer></script>
     <script src="scripts/mail.js" defer></script>
     <title>Mailbox for resource sharer</title>
+    <link rel="stylesheet" href="stylesheets/mail.css">
 </head>
 <body>
     <div id="app">
+
         <div v-for="mail in mails">
+            <div class="maill">
             <h2>{{mail._doc.subject}}</h2>
             <h3>{{mail._doc.content}}</h3>
             {{mail._doc._id}}
-            <button @click="resolveid(mail._doc.resourceId, mail._doc._id, mail._doc.content)">Mark as accepted</button>
-        </div>
+            <br><button class="btn" @click="resolveid(mail._doc.resourceId, mail._doc._id, mail._doc.content)">Mark as accepted</button>
+        </div></div>
     </div>
 </body>
 </html>

@@ -11,12 +11,18 @@
 </head>
 <body>
     <div id="app">
-        <form @submit="login">
-            <input type="text" placeholder="username"/>
-            <input type="password" placeholder="Password" />
-            <input type="submit" />
-        </form>
-        <h4 :class="color">{{errors}}</h4>
+        <div class="form-back">
+            <div class="sgp"></div><h1>Sign In</h1>
+            <p>Pls fill your details</p>
+            <form @submit="login">
+              <label for="name">Name:</label>  <input type="text" class="data" placeholder="username" name="name" required/>
+             <br> <label for="pass">Pass:  </label>  <input class="data" type="password" placeholder="Password" required/>
+            <br><input class="sbtn" type="submit" required/>
+            </form>
+            <h4 :class="color">{{errors}}</h4>
+                    </div>
+        </div></div>
+      
     </div>
 </body>
 </html>

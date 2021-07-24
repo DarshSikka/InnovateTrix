@@ -6,21 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/vue@3.0.0" defer></script>
     <script src="scripts/taskbox.js" defer></script>
+    <link rel="stylesheet" href="styles/taskbox.css">
     <title>Task Box</title>
 </head>
 <body>
     <div id="app">
+        <div class="main">
     <h1>Available Tasks:-</h1>
     <div v-if="assignment.resource">
-        {{assignment.resource._doc.name}} is assigned to send from {{assignment.resource._doc.address.completeAddress}} of {{assignment.resource._doc.address.city}}, {{assignment.resource._doc.address.state}}, {{assignment.resource._doc.address.country}}
+    <p>  {{assignment.resource._doc.name}} is assigned to send from {{assignment.resource._doc.address.completeAddress}} of {{assignment.resource._doc.address.city}}, {{assignment.resource._doc.address.state}}, {{assignment.resource._doc.address.country}}
+    </p>  <br>
         <button @click="done()">This is complete!</button>
     </div>
+    <br>
         <div v-for="tas in tasks">
-            From {{tas._doc.sender.completeAddress}} in City:{{tas._doc.sender.city}}, State: {{tas._doc.sender.state}}, Country: {{tas._doc.sender.country}} and pincode {{tas._doc.sender.pincode}}
+          <p> From {{tas._doc.sender.completeAddress}} in City:{{tas._doc.sender.city}}, State: {{tas._doc.sender.state}}, Country: {{tas._doc.sender.country}} and pincode {{tas._doc.sender.pincode}}
             to {{tas._doc.receiverAddress}}
-            Need to drop {{tas._doc.name}}
+            Need to drop {{tas._doc.name}}</p> 
+            <br>
             <button @click="assign(tas._doc._id)">I will do this</button>
         </div>
     </div>
+    </div>
 </body>
-</html>

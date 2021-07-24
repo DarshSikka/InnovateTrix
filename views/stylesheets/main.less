@@ -1,5 +1,58 @@
-@nav-background-color: white;
-@main-background-color: #fffbe3;
+@nav-background-color: #cdf0ea;
+@main-background-color: #ffffff;
+@import url("https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Actor&family=Alegreya+Sans+SC:wght@700&display=swap");
+#sign {
+  width: 126px;
+  height: 46px;
+
+  background: #f9f9f9;
+  border-radius: 40px;
+  border: none;
+  transition: 1s ease-in-out;
+}
+#sign:hover {
+  background: #c0bebea1;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  width: 128px;
+  height: 51px;
+  background: #cdf0ea;
+  border-radius: 4px;
+  border: none;
+  transition: 1s ease-in-out;
+}
+button:hover {
+  background: #8eebdb;
+  cursor: pointer;
+}
+
+.input {
+  float: left;
+  background: #f9f9f9;
+  border-radius: 40px;
+  width: 433px;
+  height: 49px;
+  border: none;
+  outline: none;
+  padding: 0px 30px;
+  margin: 30px;
+}
+
+.h {
+  font-family: Alegreya Sans SC;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 26px;
+  color: #000000;
+}
+
 body {
   background-color: @main-background-color;
 }
@@ -10,6 +63,9 @@ nav {
   display: flex;
   background-color: @nav-background-color;
   justify-content: space-around;
+
+  padding: 20px 20px;
+  height: 50px;
 }
 [signupbutton] {
   font-size: 17px;
